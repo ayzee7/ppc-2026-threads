@@ -17,8 +17,7 @@ class RozenbergAQuicksortSimpleMergeSEQ : public BaseTask {
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
-  static int Partition(InType &data, int left, int right);
-  static void Quicksort(InType &data, int left, int right);
+  static void Quicksort(InType &data);
 };
 
 }  // namespace rozenberg_a_quicksort_simple_merge

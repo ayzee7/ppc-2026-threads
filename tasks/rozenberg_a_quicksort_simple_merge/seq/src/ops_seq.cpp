@@ -1,6 +1,7 @@
 #include "rozenberg_a_quicksort_simple_merge/seq/include/ops_seq.hpp"
 
-#include <numeric>
+#include <stack>
+#include <utility>
 #include <vector>
 
 #include "rozenberg_a_quicksort_simple_merge/common/include/common.hpp"
@@ -30,40 +31,63 @@ bool RozenbergAQuicksortSimpleMergeSEQ::PreProcessingImpl() {
   return GetOutput().size() == GetInput().size();
 }
 
-int RozenbergAQuicksortSimpleMergeSEQ::Partition(InType &data, int left, int right) {
-  int pivot = data[left + (right - left) / 2];
-  int i = left - 1;
-  int j = right + 1;
-  while (true) {
-    do {
-      i++;
-    } while (data[i] < pivot);
-    do {
-      j--;
-    } while (data[j] > pivot);
-    if (i >= j) {
-      return j;
-    }
-    std::swap(data[i], data[j]);
+void RozenbergAQuicksortSimpleMergeSEQ::Quicksort(InType &data) {
+  if (data.size() < 2) {
+    return;
   }
-}
 
-void RozenbergAQuicksortSimpleMergeSEQ::Quicksort(InType &data, int left, int right) {
-  while (left < right) {
-    int q = Partition(data, left, right);
-    if (q - left < right - q) {
-      Quicksort(data, left, q);
-      left = q + 1;
+  std::stack<std::pair<int, int>> stack;
+
+  stack.push({0, data.size() - 1});
+
+  while (!stack.empty()) {
+    const auto [left, right] = stack.top();
+    stack.pop();
+
+    if (left >= right) {
+      continue;
+    }
+
+    const int pivot = data[left + ((right - left) / 2)];
+    int i = left;
+    int j = right;
+
+    while (i <= j) {
+      while (data[i] < pivot) {
+        i++;
+      }
+      while (data[j] > pivot) {
+        j--;
+      }
+
+      if (i <= j) {
+        std::swap(data[i], data[j]);
+        i++;
+        j--;
+      }
+    }
+
+    if (j - left > right - i) {
+      if (left < j) {
+        stack.push({left, j});
+      }
+      if (i < right) {
+        stack.push({i, right});
+      }
     } else {
-      Quicksort(data, q + 1, right);
-      right = q;
+      if (i < right) {
+        stack.push({i, right});
+      }
+      if (left < j) {
+        stack.push({left, j});
+      }
     }
   }
 }
 
 bool RozenbergAQuicksortSimpleMergeSEQ::RunImpl() {
   InType data = GetInput();
-  Quicksort(data, 0, data.size() - 1);
+  Quicksort(data);
   GetOutput() = data;
   return true;
 }
