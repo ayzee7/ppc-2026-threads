@@ -6,7 +6,7 @@
 #include "rozenberg_a_quicksort_simple_merge/common/include/common.hpp"
 #include "rozenberg_a_quicksort_simple_merge/seq/include/ops_seq.hpp"
 #include "util/include/perf_test_util.hpp"
-#include "util/include/util.hpp"  
+#include "util/include/util.hpp"
 
 namespace rozenberg_a_quicksort_simple_merge {
 
