@@ -1,0 +1,24 @@
+#pragma once
+
+#include "rozenberg_a_quicksort_simple_merge/common/include/common.hpp"
+#include "task/include/task.hpp"
+
+namespace rozenberg_a_quicksort_simple_merge {
+
+class RozenbergAQuicksortSimpleMergeSEQ : public BaseTask {
+ public:
+  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
+    return ppc::task::TypeOfTask::kSEQ;
+  }
+  explicit RozenbergAQuicksortSimpleMergeSEQ(const InType &in);
+
+ private:
+  bool ValidationImpl() override;
+  bool PreProcessingImpl() override;
+  bool RunImpl() override;
+  bool PostProcessingImpl() override;
+  static int Partition(InType &data, int left, int right);
+  static void Quicksort(InType &data, int left, int right);
+};
+
+}  // namespace rozenberg_a_quicksort_simple_merge
