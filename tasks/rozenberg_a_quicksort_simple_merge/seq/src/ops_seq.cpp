@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "rozenberg_a_quicksort_simple_merge/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace rozenberg_a_quicksort_simple_merge {
 
@@ -31,6 +30,28 @@ bool RozenbergAQuicksortSimpleMergeSEQ::PreProcessingImpl() {
   return GetOutput().size() == GetInput().size();
 }
 
+std::pair<int, int> RozenbergAQuicksortSimpleMergeSEQ::Partition(InType &data, int left, int right) {
+  const int pivot = data[left + ((right - left) / 2)];
+  int i = left;
+  int j = right;
+
+  while (i <= j) {
+    while (data[i] < pivot) {
+      i++;
+    }
+    while (data[j] > pivot) {
+      j--;
+    }
+
+    if (i <= j) {
+      std::swap(data[i], data[j]);
+      i++;
+      j--;
+    }
+  }
+  return {i, j};
+}
+
 void RozenbergAQuicksortSimpleMergeSEQ::Quicksort(InType &data) {
   if (data.size() < 2) {
     return;
@@ -48,24 +69,7 @@ void RozenbergAQuicksortSimpleMergeSEQ::Quicksort(InType &data) {
       continue;
     }
 
-    const int pivot = data[left + ((right - left) / 2)];
-    int i = left;
-    int j = right;
-
-    while (i <= j) {
-      while (data[i] < pivot) {
-        i++;
-      }
-      while (data[j] > pivot) {
-        j--;
-      }
-
-      if (i <= j) {
-        std::swap(data[i], data[j]);
-        i++;
-        j--;
-      }
-    }
+    const auto [i, j] = Partition(data, left, right);
 
     if (j - left > right - i) {
       if (left < j) {

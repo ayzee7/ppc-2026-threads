@@ -17,6 +17,7 @@ class RozenbergAQuicksortSimpleMergeSEQ : public BaseTask {
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
+  static std::pair<int, int> Partition(InType &data, int left, int right);
   static void Quicksort(InType &data);
 };
 
