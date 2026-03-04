@@ -97,14 +97,23 @@ bool MorozovaSStrassenMultiplicationSEQ::ValidationImpl() {
     return false;
   }
 
-  int n = static_cast<int>(GetInput()[0]);
-  if (n <= 0) {
+  double size_val = GetInput()[0];
+  if (size_val <= 0.0 || size_val > 10000.0) {
+    return false;
+  }
+
+  int n = static_cast<int>(size_val);
+
+  if (std::abs(size_val - static_cast<double>(n)) > 1e-9) {
     return false;
   }
 
   size_t expected_size = 1 + (2 * static_cast<size_t>(n) * static_cast<size_t>(n));
+  if (GetInput().size() != expected_size) {
+    return false;
+  }
 
-  return GetInput().size() == expected_size;
+  return true;
 }
 
 bool MorozovaSStrassenMultiplicationSEQ::PreProcessingImpl() {
