@@ -1,5 +1,8 @@
 #include "peryashkin_v_binary_component_contour_processing/tbb/include/ops_tbb.hpp"
 
+#include <oneapi/tbb/blocked_range.h>
+#include <oneapi/tbb/parallel_for.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -7,9 +10,6 @@
 #include <ranges>
 #include <utility>
 #include <vector>
-
-#include <oneapi/tbb/blocked_range.h>
-#include <oneapi/tbb/parallel_for.h>
 
 #include "peryashkin_v_binary_component_contour_processing/common/include/common.hpp"
 
@@ -141,10 +141,10 @@ inline OutType SolveTBB(const BinaryImage &img) {
 
   oneapi::tbb::parallel_for(oneapi::tbb::blocked_range<std::size_t>(0, comps.size()),
                             [&](const oneapi::tbb::blocked_range<std::size_t> &range) {
-                              for (std::size_t i = range.begin(); i != range.end(); ++i) {
-                                hulls[i] = ConvexHullMonotonicChain(std::move(comps[i]));
-                              }
-                            });
+    for (std::size_t i = range.begin(); i != range.end(); ++i) {
+      hulls[i] = ConvexHullMonotonicChain(std::move(comps[i]));
+    }
+  });
 
   return hulls;
 }
