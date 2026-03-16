@@ -68,7 +68,7 @@ void CompareSplit(std::vector<int> &arr, int start1, int len1, int start2, int l
   int write2 = start2;
 
   for (int i = 0; i < len1 + len2; ++i) {
-    int val;
+    int val = 0;
     if (p1 < len1 && (p2 == len2 || left_block[p1] <= right_block[p2])) {
       val = left_block[p1++];
     } else {
@@ -129,9 +129,9 @@ bool HoareSortBatcherOMP::PreProcessingImpl() {
 }
 
 bool HoareSortBatcherOMP::RunImpl() {
-  auto &output_ = GetOutput();
+  auto &output = GetOutput();
 
-  int orig_n = static_cast<int>(output_.size());
+  int orig_n = static_cast<int>(output.size());
   if (orig_n <= 1) {
     return true;
   }
@@ -143,13 +143,13 @@ bool HoareSortBatcherOMP::RunImpl() {
   }
 
   if (t == 1) {
-    QuickSortHoare(output_, 0, orig_n - 1);
+    QuickSortHoare(output, 0, orig_n - 1);
     return true;
   }
 
   int pad = (t - (orig_n % t)) % t;
   for (int i = 0; i < pad; ++i) {
-    output_.push_back(std::numeric_limits<int>::max());
+    output.push_back(std::numeric_limits<int>::max());
   }
 
   int n = orig_n + pad;
@@ -159,16 +159,16 @@ bool HoareSortBatcherOMP::RunImpl() {
     offsets[i] = i * chunk;
   }
 
-  std::vector<int> &local_output = output_;
+  std::vector<int> &local_output = output;
 
 #pragma omp parallel for num_threads(t) default(none) shared(local_output, offsets, t)
   for (int i = 0; i < t; ++i) {
     QuickSortHoare(local_output, offsets[i], offsets[i + 1] - 1);
   }
 
-  BatcherMergePhase(output_, offsets, t);
+  BatcherMergePhase(output, offsets, t);
 
-  output_.resize(orig_n);
+  output.resize(orig_n);
 
   return true;
 }
