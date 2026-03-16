@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "smyshlaev_a_sle_cg_seq/common/include/common.hpp"
+#include "util/include/util.hpp"
 
 namespace smyshlaev_a_sle_cg_seq {
 
@@ -133,7 +134,6 @@ bool SmyshlaevASleCgTaskOMP::RunParallel(int num_threads) {
   double rs_old = 0.0;
   int n_iters = static_cast<int>(n);
 
-// Единственный вызов OMP, как в вашем исходном коде, но с фиксом для CI
 #pragma omp parallel for default(none) shared(n_iters, r) num_threads(num_threads) reduction(+ : rs_old)
   for (int i = 0; i < n_iters; ++i) {
     rs_old += r[i] * r[i];
@@ -147,7 +147,6 @@ bool SmyshlaevASleCgTaskOMP::RunParallel(int num_threads) {
 
   const int max_iterations = static_cast<int>(n) * 2;
   for (int iter = 0; iter < max_iterations; ++iter) {
-    // Остальные функции вызываются последовательно (как вы просили)
     ComputeAp(flat_A_, p, ap, n);
     double p_ap = ComputeDotProduct(p, ap);
     if (std::abs(p_ap) < 1e-15) {
@@ -174,11 +173,14 @@ bool SmyshlaevASleCgTaskOMP::RunImpl() {
   if (b.empty()) {
     return true;
   }
+  size_t n = b.size();
+  int n_iters = static_cast<int>(n);
 
   int num_threads = ppc::util::GetNumThreads();
-
-  // Если поток 1 (CI/Valgrind), запускаем чистый seq без инициализации OMP
-  if (num_threads <= 1) {
+  if (n < num_threads * 100) {
+    num_threads = 1;
+  }
+  if (num_threads == 1) {
     return RunSequential();
   }
 
