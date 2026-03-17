@@ -41,7 +41,7 @@ bool VolkovASparseMatMulCcsOmp::RunImpl() {
   // Параллельный регион. Всё, что объявлено внутри, становится локальным для потока!
 #pragma omp parallel default(none) shared(matrix_a, matrix_b, cols_res_rows, cols_res_values)
   {
-    // Изящный подход: потоколокальный аккумулятор. 
+    // Изящный подход: потоколокальный аккумулятор.
     // Никаких omp_get_thread_num() и сложной индексации!
     std::vector<double> local_accumulator(matrix_a.rows_count, 0.0);
 
