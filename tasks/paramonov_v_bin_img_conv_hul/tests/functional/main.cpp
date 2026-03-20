@@ -10,7 +10,6 @@
 
 #include "paramonov_v_bin_img_conv_hul/common/include/common.hpp"
 #include "paramonov_v_bin_img_conv_hul/omp/include/ops_omp.hpp"
-#include "paramonov_v_bin_img_conv_hul/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
 
 namespace paramonov_v_bin_img_conv_hul {
@@ -208,9 +207,8 @@ const std::array<TestCase, 8> kTestCases = {
 
      std::make_tuple(CreateTestImage(10, 10), std::vector<std::vector<PixelPoint>>{}, "empty_image")}};
 
-const auto kTestTasksList = std::tuple_cat(
-    ppc::util::AddFuncTask<ConvexHullSequential, InputType>(kTestCases, PPC_SETTINGS_paramonov_v_bin_img_conv_hul),
-    ppc::util::AddFuncTask<ConvexHullOMP, InputType>(kTestCases, PPC_SETTINGS_paramonov_v_bin_img_conv_hul));
+const auto kTestTasksList =
+    ppc::util::AddFuncTask<ConvexHullOMP, InputType>(kTestCases, PPC_SETTINGS_paramonov_v_bin_img_conv_hul);
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 

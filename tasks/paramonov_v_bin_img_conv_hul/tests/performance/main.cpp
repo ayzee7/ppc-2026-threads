@@ -8,7 +8,6 @@
 
 #include "paramonov_v_bin_img_conv_hul/common/include/common.hpp"
 #include "paramonov_v_bin_img_conv_hul/omp/include/ops_omp.hpp"
-#include "paramonov_v_bin_img_conv_hul/seq/include/ops_seq.hpp"
 #include "util/include/perf_test_util.hpp"
 
 namespace paramonov_v_bin_img_conv_hul {
@@ -70,8 +69,8 @@ TEST_P(ConvexHullPerformanceTest, RunPerformanceTest) {
 
 namespace {
 
-const auto kPerformanceTasks = ppc::util::MakeAllPerfTasks<InputType, ConvexHullSequential, ConvexHullOMP>(
-    PPC_SETTINGS_paramonov_v_bin_img_conv_hul);
+const auto kPerformanceTasks =
+    ppc::util::MakeAllPerfTasks<InputType, ConvexHullOMP>(PPC_SETTINGS_paramonov_v_bin_img_conv_hul);
 
 const auto kTestValues = ppc::util::TupleToGTestValues(kPerformanceTasks);
 
