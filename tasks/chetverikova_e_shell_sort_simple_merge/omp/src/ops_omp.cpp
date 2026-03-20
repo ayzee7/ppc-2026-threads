@@ -73,7 +73,7 @@ bool ChetverikovaEShellSortSimpleMergeOMP::RunImpl() {
   }
   std::vector<std::vector<int>> local_buffers(counts_parts);
 
-#pragma omp parallel for default(none) shared(output, ind_parts, counts_parts) schedule(static)
+#pragma omp parallel for default(none) shared(output, ind_parts, local_buffers, counts_parts) schedule(static)
   for (size_t i = 0; i < counts_parts; ++i) {
     auto left = static_cast<std::ptrdiff_t>(ind_parts[i]);
     auto right = static_cast<std::ptrdiff_t>(ind_parts[i + 1]);
