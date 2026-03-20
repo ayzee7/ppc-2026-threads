@@ -51,7 +51,7 @@ namespace vinyaikina_e_multidimensional_integrals_simpson_method {
 
     double count_n_dim_area(const std::vector<std::pair<double, double>>& borders) {
       double area = 1.0;
-      for (int i = 0; i < borders.size(); i++) {
+      for (size_t i = 0; i < borders.size(); i++) {
         area *= (borders[i].second - borders[i].first);
       }
       return area;
