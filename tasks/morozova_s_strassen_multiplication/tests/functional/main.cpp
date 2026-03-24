@@ -73,6 +73,9 @@ class MorozovaSStrassenMultiplicationFuncTests : public ppc::util::BaseRunFuncTe
       case 10:
         SetupTest10();
         break;
+      case 11:
+        SetupTest11();
+        break;
       default:
         SetupDefaultTest();
         break;
@@ -131,6 +134,12 @@ class MorozovaSStrassenMultiplicationFuncTests : public ppc::util::BaseRunFuncTe
     input_data_ = {64.0};
     AddWeightedMatrix(64, [](int i, int j) { return static_cast<double>((i * 64) + j + 1); });
     AddWeightedMatrix(64, [](int i, int j) { return static_cast<double>(((i + j) * 2) + 1); });
+  }
+
+  void SetupTest11() {
+    input_data_ = {128.0};
+    AddWeightedMatrix(128, [](int i, int j) { return static_cast<double>((i * 128) + j + 1); });
+    AddWeightedMatrix(128, [](int i, int j) { return static_cast<double>(((i + j) * 2) + 1); });
   }
 
   void SetupDefaultTest() {
@@ -259,11 +268,11 @@ TEST_P(MorozovaSStrassenMultiplicationSEQFuncTests, MatrixMultiplication) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 10> kTestParam = {std::make_tuple(1, "2x2"),          std::make_tuple(2, "4x4"),
-                                             std::make_tuple(3, "8x8"),          std::make_tuple(4, "16x16"),
-                                             std::make_tuple(5, "32x32"),        std::make_tuple(6, "empty"),
-                                             std::make_tuple(7, "invalid_size"), std::make_tuple(8, "3x3_odd"),
-                                             std::make_tuple(9, "1x1"),          std::make_tuple(10, "64x64")};
+const std::array<TestType, 11> kTestParam = {
+    std::make_tuple(1, "2x2"),          std::make_tuple(2, "4x4"),     std::make_tuple(3, "8x8"),
+    std::make_tuple(4, "16x16"),        std::make_tuple(5, "32x32"),   std::make_tuple(6, "empty"),
+    std::make_tuple(7, "invalid_size"), std::make_tuple(8, "3x3_odd"), std::make_tuple(9, "1x1"),
+    std::make_tuple(10, "64x64"),       std::make_tuple(11, "128x128")};
 
 const auto kTestTasksSEQ = ppc::util::AddFuncTask<MorozovaSStrassenMultiplicationSEQ, InType>(
     kTestParam, PPC_SETTINGS_morozova_s_strassen_multiplication);
