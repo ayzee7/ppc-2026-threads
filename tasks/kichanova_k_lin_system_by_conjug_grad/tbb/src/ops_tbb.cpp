@@ -30,6 +30,54 @@ void ComputeMatrixVectorAndUpdateTBB(const std::vector<double> &a, const std::ve
   });
 }
 
+double ComputeResidualNorm(const std::vector<double> &r, int n) {
+  double rr = tbb::parallel_reduce(tbb::blocked_range<int>(0, n, 1024), 0.0,
+                                   [&](const tbb::blocked_range<int> &range, double local_sum) {
+    for (int i = range.begin(); i < range.end(); ++i) {
+      local_sum += r[i] * r[i];
+    }
+    return local_sum;
+  }, [](double x, double y) { return x + y; });
+  return std::sqrt(rr);
+}
+
+double ComputeDotProduct(const std::vector<double> &a, const std::vector<double> &b, int n) {
+  return tbb::parallel_reduce(tbb::blocked_range<int>(0, n, 1024), 0.0,
+                              [&](const tbb::blocked_range<int> &range, double local_sum) {
+    for (int i = range.begin(); i < range.end(); ++i) {
+      local_sum += a[i] * b[i];
+    }
+    return local_sum;
+  }, [](double x, double y) { return x + y; });
+}
+
+void InitializeVectors(std::vector<double> &r, std::vector<double> &p, const std::vector<double> &b, int n) {
+  tbb::parallel_for(tbb::blocked_range<int>(0, n, 1024), [&](const tbb::blocked_range<int> &range) {
+    for (int i = range.begin(); i < range.end(); ++i) {
+      r[i] = b[i];
+      p[i] = r[i];
+    }
+  });
+}
+
+void UpdateSolutionAndResidual(std::vector<double> &x, std::vector<double> &r, const std::vector<double> &p,
+                               const std::vector<double> &ap, double alpha, int n) {
+  tbb::parallel_for(tbb::blocked_range<int>(0, n, 1024), [&](const tbb::blocked_range<int> &range) {
+    for (int i = range.begin(); i < range.end(); ++i) {
+      x[i] += alpha * p[i];
+      r[i] -= alpha * ap[i];
+    }
+  });
+}
+
+void UpdateDirection(std::vector<double> &p, const std::vector<double> &r, double beta, int n) {
+  tbb::parallel_for(tbb::blocked_range<int>(0, n, 1024), [&](const tbb::blocked_range<int> &range) {
+    for (int i = range.begin(); i < range.end(); ++i) {
+      p[i] = r[i] + (beta * p[i]);
+    }
+  });
+}
+
 }  // namespace
 
 KichanovaKLinSystemByConjugGradTBB::KichanovaKLinSystemByConjugGradTBB(const InType &in) {
@@ -74,71 +122,35 @@ bool KichanovaKLinSystemByConjugGradTBB::RunImpl() {
   std::vector<double> p(n);
   std::vector<double> ap(n);
 
-  tbb::parallel_for(tbb::blocked_range<int>(0, n, 1024), [&](const tbb::blocked_range<int> &range) {
-    for (int i = range.begin(); i < range.end(); ++i) {
-      r[i] = b[i];
-      p[i] = r[i];
-    }
-  });
+  InitializeVectors(r, p, b, n);
 
-  double rr_old = tbb::parallel_reduce(tbb::blocked_range<int>(0, n, 1024), 0.0,
-                                       [&](const tbb::blocked_range<int> &range, double local_sum) {
-    for (int i = range.begin(); i < range.end(); ++i) {
-      local_sum += r[i] * r[i];
-    }
-    return local_sum;
-  }, [](double x, double y) { return x + y; });
-
-  double residual_norm = std::sqrt(rr_old);
+  double residual_norm = ComputeResidualNorm(r, n);
   if (residual_norm < epsilon) {
     return true;
   }
 
+  double rr_old = residual_norm * residual_norm;
   int max_iter = n * 1000;
-  for (int iter = 0; iter < max_iter; iter++) {
+
+  for (int iter = 0; iter < max_iter; ++iter) {
     ComputeMatrixVectorAndUpdateTBB(a, p, ap, n, 0.0, x, p);
 
-    double p_ap = tbb::parallel_reduce(tbb::blocked_range<int>(0, n, 1024), 0.0,
-                                       [&](const tbb::blocked_range<int> &range, double local_sum) {
-      for (int i = range.begin(); i < range.end(); ++i) {
-        local_sum += p[i] * ap[i];
-      }
-      return local_sum;
-    }, [](double x, double y) { return x + y; });
-
+    double p_ap = ComputeDotProduct(p, ap, n);
     if (std::abs(p_ap) < 1e-30) {
       break;
     }
 
     double alpha = rr_old / p_ap;
+    UpdateSolutionAndResidual(x, r, p, ap, alpha, n);
 
-    tbb::parallel_for(tbb::blocked_range<int>(0, n, 1024), [&](const tbb::blocked_range<int> &range) {
-      for (int i = range.begin(); i < range.end(); ++i) {
-        x[i] += alpha * p[i];
-        r[i] -= alpha * ap[i];
-      }
-    });
-
-    double rr_new = tbb::parallel_reduce(tbb::blocked_range<int>(0, n, 1024), 0.0,
-                                         [&](const tbb::blocked_range<int> &range, double local_sum) {
-      for (int i = range.begin(); i < range.end(); ++i) {
-        local_sum += r[i] * r[i];
-      }
-      return local_sum;
-    }, [](double x, double y) { return x + y; });
-
-    residual_norm = std::sqrt(rr_new);
+    residual_norm = ComputeResidualNorm(r, n);
     if (residual_norm < epsilon) {
       break;
     }
 
+    double rr_new = residual_norm * residual_norm;
     double beta = rr_new / rr_old;
-
-    tbb::parallel_for(tbb::blocked_range<int>(0, n, 1024), [&](const tbb::blocked_range<int> &range) {
-      for (int i = range.begin(); i < range.end(); ++i) {
-        p[i] = r[i] + beta * p[i];
-      }
-    });
+    UpdateDirection(p, r, beta, n);
 
     rr_old = rr_new;
   }
