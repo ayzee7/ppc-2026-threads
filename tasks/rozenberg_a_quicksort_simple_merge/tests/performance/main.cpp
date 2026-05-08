@@ -4,6 +4,7 @@
 #include <random>
 #include <string>
 
+#include "rozenberg_a_quicksort_simple_merge/all/include/ops_all.hpp"
 #include "rozenberg_a_quicksort_simple_merge/common/include/common.hpp"
 #include "rozenberg_a_quicksort_simple_merge/omp/include/ops_omp.hpp"
 #include "rozenberg_a_quicksort_simple_merge/seq/include/ops_seq.hpp"
@@ -36,6 +37,9 @@ class RozenbergARunPerfTestsThreads : public ppc::util::BaseRunPerfTests<InType,
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
+    if (ppc::util::GetMPIRank() != 0) {
+      return true;
+    }
     return (output_data_ == output_data);
   }
 
@@ -56,8 +60,8 @@ namespace {
 
 const auto kAllPerfTasks =
     ppc::util::MakeAllPerfTasks<InType, RozenbergAQuicksortSimpleMergeSEQ, RozenbergAQuicksortSimpleMergeOMP,
-                                RozenbergAQuicksortSimpleMergeTBB, RozenbergAQuicksortSimpleMergeSTL>(
-        PPC_SETTINGS_rozenberg_a_quicksort_simple_merge);
+                                RozenbergAQuicksortSimpleMergeTBB, RozenbergAQuicksortSimpleMergeSTL,
+                                RozenbergAQuicksortSimpleMergeALL>(PPC_SETTINGS_rozenberg_a_quicksort_simple_merge);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
