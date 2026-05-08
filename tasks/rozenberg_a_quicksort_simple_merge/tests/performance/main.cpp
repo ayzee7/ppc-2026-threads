@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <fstream>
+#include <algorithm>
+#include <random>
 #include <string>
 
 #include "rozenberg_a_quicksort_simple_merge/common/include/common.hpp"
@@ -17,25 +18,21 @@ class RozenbergARunPerfTestsThreads : public ppc::util::BaseRunPerfTests<InType,
   void SetUp() override {
     input_data_.clear();
     output_data_.clear();
-    std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_rozenberg_a_quicksort_simple_merge, "perf_test.txt");
-    std::ifstream file(abs_path);
 
-    if (file.is_open()) {
-      int size = 0;
-      file >> size;
+    constexpr int kSize = 10000000;
+    std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<int> dist(-10000000, 10000000);
 
-      InType input_data(size);
-      for (int i = 0; i < size; i++) {
-        file >> input_data[i];
-      }
-
-      OutType output_data(size);
-      for (int i = 0; i < size; i++) {
-        file >> output_data[i];
-      }
-      input_data_ = input_data;
-      output_data_ = output_data;
+    InType input_data(kSize);
+    for (int i = 0; i < kSize; i++) {
+      input_data[i] = dist(rng);
     }
+
+    OutType output_data = input_data;
+    std::sort(output_data.begin(), output_data.end());
+
+    input_data_ = input_data;
+    output_data_ = output_data;
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
