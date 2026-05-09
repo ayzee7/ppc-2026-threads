@@ -150,7 +150,7 @@ void RozenbergAQuicksortSimpleMergeALL::ThreadQuicksort(InType &local_data) {
     }
     thr_borders[num_threads] = local_n;
 
-#pragma omp parallel for default(none) shared(local_data, thr_borders) num_threads(num_threads)
+#pragma omp parallel for default(none) shared(local_data, thr_borders, num_threads) num_threads(num_threads)
     for (int i = 0; i < num_threads; i++) {
       Quicksort(local_data, thr_borders[i], thr_borders[i + 1] - 1);
     }
