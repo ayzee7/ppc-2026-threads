@@ -161,7 +161,13 @@ void RozenbergAQuicksortSimpleMergeSEQ::PushSubarrays(
 **Команды запуска:**
  
 ```bash
+# Задать число потоков
 $env:PPC_NUM_THREADS=1
+
+# Функциональные тесты
+.\build\bin\ppc_func_tests.exe --gtest_filter="*Rozenberg*seq*"
+
+# Тесты производительности
 .\build\bin\ppc_perf_tests.exe --gtest_filter="*Rozenberg*seq*"
 ```
  
